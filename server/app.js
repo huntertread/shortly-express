@@ -5,6 +5,8 @@ const partials = require('express-partials');
 const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
+const db = require('./db');
+const cookieParse = require('./middleware/cookieParser.js');
 
 const app = express();
 
@@ -17,17 +19,17 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 
 
-app.get('/', 
+app.get('/',
 (req, res) => {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/create',
 (req, res) => {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links',
 (req, res, next) => {
   models.Links.getAll()
     .then(links => {
@@ -38,7 +40,7 @@ app.get('/links',
     });
 });
 
-app.post('/links', 
+app.post('/links',
 (req, res, next) => {
   var url = req.body.url;
   if (!models.Links.isValidUrl(url)) {
@@ -78,7 +80,48 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 
+// Add routes to your Express server to process incoming POST requests.
+// These routes should enable a user to register for a new account and for users to log in to your application.
+// Take a look at the login.ejs and signup.ejs templates in the views directory to determine which routes you need to add.
 
+// Add the appropriate callback functions to your new routes.
+// Add methods to your user model, as necessary, to keep your code modular (i.e., your database model methods should not receive as arguments or otherwise have access to the request or response objects).
+
+// render the sign up page
+app.get('/signup',
+(req, res) => {
+  res.render('signup');
+});
+
+app.post('/signup', (req, res, next) => {
+  // compare the attempted username to the users table
+  return models.Users.create(req.body)
+  .then((results) => {
+    console.log(`${req.body.username} successfully added to the database`);
+    res.body = `${req.body.username} has been added to the database`;
+    res.statusCode = 201;
+    res.redirect('./login');
+    res.end();
+  })
+  .catch((err) => {
+    console.log('THIS USER ALREADY EXISTS');
+    res.body = 'this username already exists, please try again.';
+    res.redirect('./signup');
+    res.statusCode = 409;
+    res.end();
+  })
+});
+
+// render the login page
+app.get('/login',
+(req, res) => {
+  res.render('login');
+});
+
+app.post('/login', (req, res, next) => {
+  console.log(cookieParse.parseCookies(req));
+  req.end();
+})
 
 /************************************************************/
 // Handle the code parameter route last - if all other routes fail
