@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 const Auth = require('./middleware/auth');
 const models = require('./models');
 const db = require('./db');
-const cookieParse = require('./middleware/cookieParser.js');
+const parseCookies = require('./middleware/cookieParser');
 
 const app = express();
 
@@ -118,9 +118,10 @@ app.get('/login',
   res.render('login');
 });
 
-app.post('/login', (req, res, next) => {
-  console.log(cookieParse.parseCookies(req));
-  req.end();
+app.post('/login', Auth, (req, res, next) => {
+  // console.log(req.headers.cookie);
+  // parseCookies.parseCookies(req, res, next);
+  res.end();
 })
 
 /************************************************************/
